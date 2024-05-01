@@ -1,10 +1,40 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Header from "./Header";
+import { LoginSchema } from "../utils/Validate";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
+  const [errors, setErrors] = useState({});
+  const nameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+
   const toggleSignIn = () => {
     setIsSignInForm(!isSignInForm);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const name = isSignInForm ? null : nameRef.current.value;
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+    console.log("Name:", name);
+    console.log("Email:", email);
+    console.log("Password:", password);
+    const { error } = LoginSchema.validate(
+      { name, email, password },
+      { abortEarly: false }
+    );
+    if (error) {
+      const validationErrors = error.details.reduce((acc, err) => {
+        acc[err.context.key] = err.message;
+        return acc;
+      }, {});
+      setErrors(validationErrors);
+    } else {
+      console.log("Form submitted successfully");
+      setErrors({});
+    }
   };
   return (
     <div className="relative">
@@ -23,14 +53,18 @@ const Login = () => {
             <h1 className="text-3xl font-semibold mb-4">
               {isSignInForm ? "Sign In" : "Sign Up"}
             </h1>
-            <form className="flex flex-col gap-4">
-              {isSignInForm && (
+            <form className="flex flex-col gap-4 " onSubmit={handleSubmit}>
+              {!isSignInForm && (
                 <input
                   type="text"
                   name="name"
                   placeholder="Enter your name"
+                  ref={nameRef}
                   className="bg-gray-800 text-white border-b-2 border-gray-600 focus:outline-none focus:border-red-500 px-3 py-2"
                 />
+              )}
+              {errors.name && (
+                <span className="text-red-500">{errors.name}</span>
               )}
 
               <input
@@ -38,14 +72,24 @@ const Login = () => {
                 name="email"
                 id="email"
                 placeholder="Enter your email"
+                ref={emailRef}
                 className="bg-gray-800 text-white border-b-2 border-gray-600 focus:outline-none focus:border-red-500 px-3 py-2"
               />
+              {errors.email && (
+                <span className="text-red-500">{errors.email}</span>
+              )}
+
               <input
                 type="password"
                 name="password"
                 placeholder="Password"
+                ref={passwordRef}
                 className="bg-gray-800 text-white border-b-2 border-gray-600 focus:outline-none focus:border-red-500 px-3 py-2"
               />
+              {errors.password && (
+                <span className="text-red-500">{errors.password}</span>
+              )}
+
               <button
                 type="submit"
                 className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
