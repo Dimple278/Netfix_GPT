@@ -1,6 +1,12 @@
 import { useState, useRef } from "react";
 import Header from "./Header";
-import { LoginSchema } from "../utils/Validate";
+import { checkValidData } from "../utils/Validate";
+// import { app } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
@@ -13,27 +19,41 @@ const Login = () => {
     setIsSignInForm(!isSignInForm);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const name = isSignInForm ? null : nameRef.current.value;
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
-    const { error } = LoginSchema.validate(
-      { name, email, password },
-      { abortEarly: false }
-    );
-    if (error) {
-      const validationErrors = error.details.reduce((acc, err) => {
-        acc[err.context.key] = err.message;
-        return acc;
-      }, {});
-      setErrors(validationErrors);
-    } else {
-      console.log("Form submitted successfully");
-      setErrors({});
+
+    const message = checkValidData(email, password);
+    setErrorMessage(message);
+    if (message) return;
+ 
+    if (isSignInForm) {
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log(user);
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            setErrors(errorCode + "-" + errorMessage);
+          });
+      else {
+        createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            // Signed up
+            const user = userCredential.user;
+            console.log(user);
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            setErrors(errorCode + "-" + errorMessage);
+          });
+      }
     }
   };
   return (

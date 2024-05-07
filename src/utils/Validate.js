@@ -1,11 +1,12 @@
-// utils/validate.js
-import Joi from "joi";
+export const checkValidData = (email, password) => {
+  const isEmailValid = /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(
+    email
+  );
+  const isPasswordValid =
+    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/.test(password);
 
-// Validation schema for signup and signin forms
-export const LoginSchema = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).allow("", null), // Allow empty string or null for name
-  email: Joi.string()
-    .email({ tlds: { allow: false } })
-    .required(),
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
-});
+  if (!isEmailValid) return "Email ID is not valid";
+  if (!isPasswordValid) return "Password is not valid";
+
+  return null;
+};
