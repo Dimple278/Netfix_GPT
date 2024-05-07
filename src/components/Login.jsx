@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import Header from "./Header";
-import { checkValidData } from "../utils/Validate";
-// import { app } from "../utils/firebase";
+import { checkValidData } from "../utils/validate.js";
 import { auth } from "../utils/firebase";
 import {
   createUserWithEmailAndPassword,
@@ -10,13 +9,14 @@ import {
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState(null);
   const nameRef = useRef(null);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
 
   const toggleSignIn = () => {
     setIsSignInForm(!isSignInForm);
+    setErrors(null);
   };
 
   const handleSubmit = async (e) => {
@@ -26,36 +26,34 @@ const Login = () => {
     const password = passwordRef.current.value;
 
     const message = checkValidData(email, password);
-    setErrorMessage(message);
-    if (message) return;
- 
+    setErrors(message);
+
     if (isSignInForm) {
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            // Signed in
-            const user = userCredential.user;
-            console.log(user);
-          })
-          .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            setErrors(errorCode + "-" + errorMessage);
-          });
-      else {
-        createUserWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            // Signed up
-            const user = userCredential.user;
-            console.log(user);
-          })
-          .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            setErrors(errorCode + "-" + errorMessage);
-          });
-      }
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrors(errorCode + "-" + errorMessage);
+        });
+    } else {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrors(errorCode + "-" + errorMessage);
+        });
     }
   };
+
   return (
     <div className="relative">
       <div
@@ -83,9 +81,6 @@ const Login = () => {
                   className="bg-gray-800 text-white border-b-2 border-gray-600 focus:outline-none focus:border-red-500 px-3 py-2"
                 />
               )}
-              {errors.name && (
-                <span className="text-red-500">{errors.name}</span>
-              )}
 
               <input
                 type="email"
@@ -95,9 +90,6 @@ const Login = () => {
                 ref={emailRef}
                 className="bg-gray-800 text-white border-b-2 border-gray-600 focus:outline-none focus:border-red-500 px-3 py-2"
               />
-              {errors.email && (
-                <span className="text-red-500">{errors.email}</span>
-              )}
 
               <input
                 type="password"
@@ -106,10 +98,8 @@ const Login = () => {
                 ref={passwordRef}
                 className="bg-gray-800 text-white border-b-2 border-gray-600 focus:outline-none focus:border-red-500 px-3 py-2"
               />
-              {errors.password && (
-                <span className="text-red-500">{errors.password}</span>
-              )}
 
+              {errors && <p className="text-red-500 text-lg py-2">{errors}</p>}
               <button
                 type="submit"
                 className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

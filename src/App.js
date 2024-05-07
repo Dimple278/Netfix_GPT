@@ -3,6 +3,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 import Body from "./components/Body";
 import Browse from "./components/Browse";
+import { Provider } from "react-redux";
+import { appStore } from "./utils/appStore";
 import Login from "./components/Login";
 
 function App() {
@@ -20,10 +22,13 @@ function App() {
       element: <Browse />,
     },
   ]);
+
   return (
-    <div>
-      <RouterProvider router={router} />
-    </div>
+    <Provider store={appStore}>
+      <div>
+        <RouterProvider router={router} />
+      </div>
+    </Provider>
   );
 }
 
